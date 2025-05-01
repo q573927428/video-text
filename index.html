@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音识别</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input { width: 80%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>语音识别工具</h1>
+    <input type="text" id="audioUrl" placeholder="请输入音频URL" value="https://v.douyin.com/I19QOZGUfGw/">
+    <button onclick="submitAudio()">开始识别</button>
+    <div id="result"></div>
+
+    <script>
+        //https://dashscope.oss-cn-beijing.aliyuncs.com/samples/audio/paraformer/hello_world_female2.wav
+        async function submitAudio() {
+            const audioUrl = document.getElementById('audioUrl').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在识别中...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audioUrl })
+                });
+
+                // 检查响应状态码
+                if (!response.ok) {
+                    throw new Error(`HTTP 错误: ${response.status}`);
+                }
+
+                // 解析 JSON 数据
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `识别失败: ${data.error}`;
+                } else {
+                    resultDiv.innerHTML = data.text || '未能获取到识别结果';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '识别失败，请检查网络或输入的URL';
+                console.error('识别过程中发生错误:', error);
+            }
+        }
+    </script>
+</body>
+</html>
